@@ -17,7 +17,7 @@ type Database struct {
 
 const (
 	HostName    = "db-engines.com"
-	SystemsPage = "https://" + HostName + "/en/systems"
+	systemsPage = "https://" + HostName + "/en/systems"
 )
 
 func DatabaseDetail() {
@@ -38,7 +38,7 @@ func DatabaseDetail() {
 }
 
 func getSystemsDocument() *goquery.Document {
-	resp, err := http.Get(SystemsPage)
+	resp, err := http.Get(systemsPage)
 	if err != nil {
 		log.Fatal(err)
 	}
