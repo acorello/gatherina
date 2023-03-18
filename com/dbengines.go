@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -12,7 +13,7 @@ import (
 
 type Database struct {
 	// Expected format: "https://db-engines.com/$LANG/system/$DBNAME"
-	URL  string
+	URL  url.URL
 	Name string
 }
 
@@ -27,8 +28,9 @@ func DatabaseDetail() {
 	linksSelection := systemsDocument.Find("table.list a")
 	databases := make([]Database, 0, linksSelection.Length())
 	linksSelection.Each(func(_ int, dbAnchor *goquery.Selection) {
-		db := dbLink(dbAnchor)
-		if db.Name == "" || db.URL == "" {
+		db, err := dbLink(dbAnchor)
+		if err != nil {
+			log.Println("invalid item:", err)
 			return
 		}
 		databases = append(databases, db)
@@ -51,13 +53,21 @@ func getSystemsDocument() *goquery.Document {
 	return systemsPage
 }
 
-func dbLink(anchor *goquery.Selection) Database {
+func dbLink(anchor *goquery.Selection) (db Database, err error) {
 	anchor.Find("span").Remove()
+	db.Name = strings.TrimSpace(anchor.Text())
+	if db.Name == "" {
+		return db, fmt.Errorf("missing 'name'")
+	}
 	href, _ := anchor.Attr("href")
 	href = strings.TrimSpace(href)
-	name := strings.TrimSpace(anchor.Text())
-	return Database{
-		URL:  href,
-		Name: name,
+	if href == "" {
+		return db, fmt.Errorf("missing 'href'")
 	}
+	url, urlErr := url.Parse(href)
+	if urlErr != nil {
+		return db, fmt.Errorf("invalid 'href' for %q: %s", db.Name, urlErr)
+	}
+	db.URL = *url
+	return db, nil
 }
