@@ -2,6 +2,7 @@
 package dbengines
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -12,9 +13,25 @@ import (
 )
 
 type Database struct {
+	// CORE DETAILS
+
 	// Expected format: "https://db-engines.com/$LANG/system/$DBNAME"
-	DetailsPage url.URL
+	DetailsPage url.URL `json:"-"`
 	Name        string
+
+	// ADDITIONAL DETAILS
+
+	CloudOnly     string
+	ImplementedIn string
+	License       string
+	PrimaryModel  string
+}
+
+func (my *Database) readDetails(d map[string]string) {
+	my.CloudOnly = d["CLOUD-BASED ONLY"]
+	my.ImplementedIn = d["IMPLEMENTATION LANGUAGE"]
+	my.License = d["LICENSE"]
+	my.PrimaryModel = d["PRIMARY DATABASE MODEL"]
 }
 
 const (
@@ -36,7 +53,9 @@ func DatabaseDetail() {
 		databases = append(databases, db)
 	})
 	for _, db := range databases {
-		fmt.Println(db.Name, db.DetailsPage)
+		addDetails(&db)
+		dbJSON, _ := json.Marshal(&db)
+		fmt.Println(string(dbJSON))
 	}
 }
 
@@ -70,4 +89,40 @@ func dbLink(anchor *goquery.Selection) (db Database, err error) {
 	}
 	db.DetailsPage = *url
 	return db, nil
+}
+
+func addDetails(db *Database) {
+	details, err := getDetailsMap(db.DetailsPage)
+	if err != nil {
+		log.Println("failed to get details", err)
+		return
+	}
+	db.readDetails(details)
+}
+
+func getDetailsMap(url url.URL) (details map[string]string, err error) {
+	res, err := http.Get(url.String())
+	if err != nil {
+		return nil, err
+	}
+	defer res.Body.Close()
+	detailsDocument, err := goquery.NewDocumentFromReader(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	attributeCells := detailsDocument.Find("TABLE.tools TBODY").Find("TD.attribute:not(.external_att)")
+	details = make(map[string]string, attributeCells.Length())
+	attributeCells.Each(func(i int, attributeTD *goquery.Selection) {
+		attributeTD.Find("SPAN.info").Remove()
+		name := strings.ToUpper(strings.TrimSpace(attributeTD.Text()))
+		valueTD := attributeTD.Next()
+		valueTD.Find("SPAN.info").Remove()
+		value := strings.TrimSpace(valueTD.Text())
+		if name == "" || value == "" {
+			log.Printf("empty attribute %q or value %q\n", name, value)
+			return
+		}
+		details[name] = value
+	})
+	return details, nil
 }
