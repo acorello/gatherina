@@ -13,8 +13,8 @@ import (
 
 type Database struct {
 	// Expected format: "https://db-engines.com/$LANG/system/$DBNAME"
-	URL  url.URL
-	Name string
+	DetailsPage url.URL
+	Name        string
 }
 
 const (
@@ -36,7 +36,7 @@ func DatabaseDetail() {
 		databases = append(databases, db)
 	})
 	for _, db := range databases {
-		fmt.Println(db.Name, db.URL)
+		fmt.Println(db.Name, db.DetailsPage)
 	}
 }
 
@@ -68,6 +68,6 @@ func dbLink(anchor *goquery.Selection) (db Database, err error) {
 	if urlErr != nil {
 		return db, fmt.Errorf("invalid 'href' for %q: %s", db.Name, urlErr)
 	}
-	db.URL = *url
+	db.DetailsPage = *url
 	return db, nil
 }
