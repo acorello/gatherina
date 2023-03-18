@@ -11,6 +11,7 @@ import (
 )
 
 type Database struct {
+	// Expected format: "https://db-engines.com/$LANG/system/$DBNAME"
 	URL  string
 	Name string
 }
