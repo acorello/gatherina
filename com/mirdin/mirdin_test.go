@@ -9,13 +9,22 @@ import (
 	"testing"
 
 	"dev.acorello.it/go/gatherina/jstree"
+	"github.com/BurntSushi/toml"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/dop251/goja/ast"
 )
 
+type Newsletters struct {
+	ArchEngineer map[string]string
+}
+
 func TestFetchArchEngineerNewsletter(t *testing.T) {
-	const URL = "https://mirdin.us16.list-manage.com/generate-js/?u=8b565c97b838125f69e75fb7f&amp;fid=313471&amp;show=100000000"
-	res, err := http.Get(URL)
+	var conf Newsletters
+	_, err := toml.DecodeFile("newsletters.toml", &conf)
+	if err != nil {
+		log.Fatal(err)
+	}
+	res, err := http.Get(conf.ArchEngineer["jshook"])
 	if err != nil {
 		log.Fatal(err)
 	}
