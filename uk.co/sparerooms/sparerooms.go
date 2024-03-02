@@ -1,6 +1,7 @@
 package main
 
 import (
+	"dev.acorello.it/go/gatherina/must"
 	"io"
 	"log"
 	"net/url"
@@ -8,7 +9,7 @@ import (
 )
 
 func main() {
-	searchURL := *Must(url.Parse("/Users/am/Projects/gatherina/uk.co/sparerooms/samples/search@01.html"))
+	searchURL := *must.Must(url.Parse("/Users/am/Projects/gatherina/uk.co/sparerooms/samples/search@01.html"))
 	processURL(searchURL, PrintAdList)
 }
 
@@ -22,11 +23,4 @@ func processURL(u url.URL, consumer func(io.Reader)) {
 	}
 	defer f.Close()
 	consumer(f)
-}
-
-func Must[T any](t T, err error) T {
-	if err != nil {
-		log.Fatal(err)
-	}
-	return t
 }

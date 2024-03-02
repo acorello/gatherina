@@ -1,6 +1,7 @@
 package main
 
 import (
+	"dev.acorello.it/go/gatherina/must"
 	"github.com/PuerkitoBio/goquery"
 	"io"
 	"log"
@@ -16,7 +17,7 @@ Listing-Id {{.ListingId}}
        URL {{.HRef}}
 `
 
-var adTemplate = Must(template.New("ad").Parse(adTempl))
+var adTemplate = must.Must(template.New("ad").Parse(adTempl))
 
 func PrintAdList(r io.Reader) {
 	ads, err := AdList(r)
@@ -36,7 +37,7 @@ func AdList(r io.Reader) (ads []AdSummary, err error) {
 	articles := d.Find("li[class='listing-result']")
 	ads = make([]AdSummary, articles.Size())
 	articles.Each(func(i int, article *goquery.Selection) {
-		ads[i] = queryAd(article)
+		ads[i] = queryAdSummary(article)
 	})
 	return ads, nil
 }
@@ -50,7 +51,7 @@ type AdSummary struct {
 
 var firstFigureAnchor = goquery.Single("figure > a")
 
-func queryAd(article *goquery.Selection) AdSummary {
+func queryAdSummary(article *goquery.Selection) AdSummary {
 	href, _ := url.Parse(article.FindMatcher(firstFigureAnchor).AttrOr("href", ""))
 	q := href.Query()
 	q.Del("search_results")
