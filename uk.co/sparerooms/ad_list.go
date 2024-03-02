@@ -28,20 +28,20 @@ func PrintAdList(r io.Reader) {
 	}
 }
 
-func AdList(r io.Reader) (ads []Ad, err error) {
+func AdList(r io.Reader) (ads []AdSummary, err error) {
 	d, err := goquery.NewDocumentFromReader(r)
 	if err != nil {
 		return nil, err
 	}
 	articles := d.Find("li[class='listing-result']")
-	ads = make([]Ad, articles.Size())
+	ads = make([]AdSummary, articles.Size())
 	articles.Each(func(i int, article *goquery.Selection) {
 		ads[i] = queryAd(article)
 	})
 	return ads, nil
 }
 
-type Ad struct {
+type AdSummary struct {
 	Title     string
 	ListingId string
 	PostCode  string
@@ -50,12 +50,12 @@ type Ad struct {
 
 var firstFigureAnchor = goquery.Single("figure > a")
 
-func queryAd(article *goquery.Selection) Ad {
+func queryAd(article *goquery.Selection) AdSummary {
 	href, _ := url.Parse(article.FindMatcher(firstFigureAnchor).AttrOr("href", ""))
 	q := href.Query()
 	q.Del("search_results")
 	href.RawQuery = q.Encode()
-	ad := Ad{
+	ad := AdSummary{
 		Title:     article.AttrOr("data-listing-title", "N/A"),
 		ListingId: article.AttrOr("data-listing-id", "N/A"),
 		PostCode:  article.AttrOr("data-listing-postcode", "N/A"),
