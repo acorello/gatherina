@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"io"
+	"net/http"
+	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 )
@@ -19,6 +22,17 @@ type Location struct {
 }
 
 var locationRegEx = must.Must(regexp.Compile(`location\s*:\s*\{\s*latitude:\s*"([^"]+)"\s*,\s*longitude\s*:\s*"([^"]+)",}`))
+
+func GetAd(u url.URL) (io.ReadCloser, error) {
+	if u.Scheme == "file" || u.Scheme == "" {
+		return os.Open(u.Path)
+	} else if u.Scheme == "http" || u.Scheme == "https" {
+		res, err := http.Get(u.String())
+		return res.Body, err
+	} else {
+		return nil, fmt.Errorf("unsupported URL scheme: %q", u.Scheme)
+	}
+}
 
 func Ad(r io.Reader) (ad AdDetails, err error) {
 	d, gqErr := goquery.NewDocumentFromReader(r)

@@ -3,6 +3,7 @@ package queries
 import (
 	"dev.acorello.it/go/gatherina/must"
 	"github.com/stretchr/testify/assert"
+	"net/url"
 	"os"
 	"testing"
 )
@@ -25,4 +26,28 @@ func TestAd(t *testing.T) {
 		return
 	}
 	assert.Equal(t, expectedAdDetails, gotAd)
+}
+
+func TestGetAd(t *testing.T) {
+	const sampleAd = "https://www.spareroom.co.uk/flatshare/flatshare_detail.pl?flatshare_id=9523438"
+	adURL := must.Must(url.Parse(sampleAd))
+
+	rc, err := GetAd(*adURL)
+	if err != nil {
+		t.Errorf("GetAd failed: %v", err)
+	}
+	defer rc.Close()
+
+	gotAd, err := Ad(rc)
+	if err != nil {
+		t.Errorf("query AdDetails failed: %v", err)
+	}
+	expected := AdDetails{
+		ListingId: "9523438",
+		Location: Location{
+			Latitude:  51.495941365157,
+			Longitude: -0.008709348379069990,
+		},
+	}
+	assert.Equal(t, expected, gotAd)
 }
