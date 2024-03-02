@@ -19,18 +19,26 @@ Listing-Id {{.ListingId}}
 var adTemplate = Must(template.New("ad").Parse(adTempl))
 
 func PrintAdList(r io.Reader) {
-	d, err := goquery.NewDocumentFromReader(r)
+	ads, err := AdList(r)
 	if err != nil {
 		log.Fatal(err)
 	}
-	articles := d.Find("li[class='listing-result']")
-	var ads = make([]Ad, articles.Size())
-	articles.Each(func(i int, article *goquery.Selection) {
-		ads[i] = queryAd(article)
-	})
 	for i := range ads {
 		adTemplate.Execute(os.Stdout, ads[i])
 	}
+}
+
+func AdList(r io.Reader) (ads []Ad, err error) {
+	d, err := goquery.NewDocumentFromReader(r)
+	if err != nil {
+		return nil, err
+	}
+	articles := d.Find("li[class='listing-result']")
+	ads = make([]Ad, articles.Size())
+	articles.Each(func(i int, article *goquery.Selection) {
+		ads[i] = queryAd(article)
+	})
+	return ads, nil
 }
 
 type Ad struct {
