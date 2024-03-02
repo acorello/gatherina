@@ -12,8 +12,8 @@ import (
 const adTempl = `
      Title {{.Title}}
 Listing-Id {{.ListingId}}
-    PostCo {{.PostCo}}
-      Href {{.Href}}
+ Post-Code {{.PostCode}}
+       URL {{.HRef}}
 `
 
 var adTemplate = Must(template.New("ad").Parse(adTempl))
@@ -36,8 +36,8 @@ func PrintAdList(r io.Reader) {
 type Ad struct {
 	Title     string
 	ListingId string
-	PostCo    string
-	Href      string
+	PostCode  string
+	HRef      string
 }
 
 var firstFigureAnchor = goquery.Single("figure > a")
@@ -50,8 +50,8 @@ func queryAd(article *goquery.Selection) Ad {
 	ad := Ad{
 		Title:     article.AttrOr("data-listing-title", "N/A"),
 		ListingId: article.AttrOr("data-listing-id", "N/A"),
-		PostCo:    article.AttrOr("data-listing-postcode", "N/A"),
-		Href:      href.String(),
+		PostCode:  article.AttrOr("data-listing-postcode", "N/A"),
+		HRef:      href.String(),
 	}
 	return ad
 }
