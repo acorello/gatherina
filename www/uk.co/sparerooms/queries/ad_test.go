@@ -10,7 +10,7 @@ import (
 )
 
 func TestAd(t *testing.T) {
-	var input = must.Must(os.Open("/Users/am/Projects/gatherina/uk.co/sparerooms/queries/samples/ad_17151018.html"))
+	var input = must.Must(os.Open("testdata/samples/ad_17151018.html"))
 	defer input.Close()
 
 	var expectedError error = nil
