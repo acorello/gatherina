@@ -30,6 +30,7 @@ func TestAd(t *testing.T) {
 }
 
 func TestGetAd(t *testing.T) {
+	t.Skip("trying to fetch external resource now outdated")
 	const sampleAd = "https://www.spareroom.co.uk/flatshare/flatshare_detail.pl?flatshare_id=9523438"
 	adURL := must.Get(url.Parse(sampleAd))
 
