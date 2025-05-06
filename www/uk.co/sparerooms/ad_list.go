@@ -1,13 +1,14 @@
 package main
 
 import (
-	"dev.acorello.it/go/gatherina/must"
-	"github.com/PuerkitoBio/goquery"
 	"io"
 	"log"
 	"net/url"
 	"os"
 	"text/template"
+
+	"dev.acorello.it/go/gatherina/must"
+	"github.com/PuerkitoBio/goquery"
 )
 
 const adTempl = `

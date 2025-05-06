@@ -1,15 +1,16 @@
 package queries
 
 import (
-	"dev.acorello.it/go/gatherina/must"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
 	"io"
 	"net/http"
 	"net/url"
 	"os"
 	"regexp"
 	"strconv"
+
+	"dev.acorello.it/go/gatherina/must"
+	"github.com/PuerkitoBio/goquery"
 )
 
 type AdDetails struct {

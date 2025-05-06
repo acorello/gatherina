@@ -1,11 +1,12 @@
 package main
 
 import (
-	"dev.acorello.it/go/gatherina/must"
 	"io"
 	"log"
 	"net/url"
 	"os"
+
+	"dev.acorello.it/go/gatherina/must"
 )
 
 func main() {

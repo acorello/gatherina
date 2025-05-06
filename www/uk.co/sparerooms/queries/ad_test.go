@@ -1,11 +1,12 @@
 package queries
 
 import (
-	"dev.acorello.it/go/gatherina/must"
-	"github.com/stretchr/testify/assert"
 	"net/url"
 	"os"
 	"testing"
+
+	"dev.acorello.it/go/gatherina/must"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAd(t *testing.T) {
