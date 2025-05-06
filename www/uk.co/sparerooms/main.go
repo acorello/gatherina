@@ -6,11 +6,11 @@ import (
 	"net/url"
 	"os"
 
-	"dev.acorello.it/go/gatherina/must"
+	"github.com/acorello/must"
 )
 
 func main() {
-	searchURL := *must.Must(url.Parse("/Users/am/Projects/gatherina/uk.co/sparerooms/samples/search@01.html"))
+	searchURL := *must.Get(url.Parse("/Users/am/Projects/gatherina/uk.co/sparerooms/samples/search@01.html"))
 	processURL(searchURL, PrintAdList)
 }
 

@@ -9,8 +9,8 @@ import (
 	"regexp"
 	"strconv"
 
-	"dev.acorello.it/go/gatherina/must"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/acorello/must"
 )
 
 type AdDetails struct {
@@ -22,7 +22,7 @@ type Location struct {
 	Latitude, Longitude float64
 }
 
-var locationRegEx = must.Must(regexp.Compile(`location\s*:\s*\{\s*latitude:\s*"([^"]+)"\s*,\s*longitude\s*:\s*"([^"]+)",}`))
+var locationRegEx = must.Get(regexp.Compile(`location\s*:\s*\{\s*latitude:\s*"([^"]+)"\s*,\s*longitude\s*:\s*"([^"]+)",}`))
 
 func GetAd(u url.URL) (io.ReadCloser, error) {
 	if u.Scheme == "file" || u.Scheme == "" {
@@ -71,7 +71,7 @@ func queryLocation(d *goquery.Document) (lat float64, lon float64, err error) {
 
 	scripts := d.Find("script")
 	parseFloat := func(s string) float64 {
-		return must.Must(strconv.ParseFloat(s, 64))
+		return must.Get(strconv.ParseFloat(s, 64))
 	}
 	scripts.EachWithBreak(func(i int, script *goquery.Selection) (cont bool) {
 		js := script.Text()

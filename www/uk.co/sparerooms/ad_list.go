@@ -7,8 +7,8 @@ import (
 	"os"
 	"text/template"
 
-	"dev.acorello.it/go/gatherina/must"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/acorello/must"
 )
 
 const adTempl = `
@@ -18,7 +18,7 @@ Listing-Id {{.ListingId}}
        URL {{.HRef}}
 `
 
-var adTemplate = must.Must(template.New("ad").Parse(adTempl))
+var adTemplate = must.Get(template.New("ad").Parse(adTempl))
 
 func PrintAdList(r io.Reader) {
 	ads, err := AdList(r)

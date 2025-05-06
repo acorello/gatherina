@@ -5,12 +5,12 @@ import (
 	"os"
 	"testing"
 
-	"dev.acorello.it/go/gatherina/must"
+	"github.com/acorello/must"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestAd(t *testing.T) {
-	var input = must.Must(os.Open("testdata/samples/ad_17151018.html"))
+	var input = must.Get(os.Open("testdata/samples/ad_17151018.html"))
 	defer input.Close()
 
 	var expectedError error = nil
@@ -31,7 +31,7 @@ func TestAd(t *testing.T) {
 
 func TestGetAd(t *testing.T) {
 	const sampleAd = "https://www.spareroom.co.uk/flatshare/flatshare_detail.pl?flatshare_id=9523438"
-	adURL := must.Must(url.Parse(sampleAd))
+	adURL := must.Get(url.Parse(sampleAd))
 
 	rc, err := GetAd(*adURL)
 	if err != nil {
