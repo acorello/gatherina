@@ -3,19 +3,14 @@ package jstree
 import (
 	"fmt"
 	"io"
-	"log"
 	"os"
 
 	"github.com/dop251/goja/ast"
 	jsparser "github.com/dop251/goja/parser"
 )
 
-func MustParse(js io.Reader) *ast.Program {
-	program, err := jsparser.ParseFile(nil, "", js, 0)
-	if err != nil {
-		log.Panic("Error parsing JS", err)
-	}
-	return program
+func Parse(js io.Reader) (*ast.Program, error) {
+	return jsparser.ParseFile(nil, "", js, 0)
 }
 
 func Walk(node ast.Node, feed func(ast.Node, int) bool) {

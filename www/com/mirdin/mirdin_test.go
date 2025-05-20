@@ -11,6 +11,7 @@ import (
 	"dev.acorello.it/go/gatherina/jstree"
 	"github.com/BurntSushi/toml"
 	"github.com/PuerkitoBio/goquery"
+	"github.com/acorello/must"
 	"github.com/dop251/goja/ast"
 )
 
@@ -30,7 +31,7 @@ func TestFetchArchEngineerNewsletter(t *testing.T) {
 	}
 	defer res.Body.Close()
 
-	program := jstree.MustParse(res.Body)
+	program := must.Get(jstree.Parse(res.Body))
 
 	var html string
 	jstree.Walk(program, func(n ast.Node, _ int) bool {
