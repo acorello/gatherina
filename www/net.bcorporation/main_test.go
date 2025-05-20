@@ -6,21 +6,13 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"slices"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/carlmjohnson/requests"
-	"github.com/matryer/is"
 	"github.com/tidwall/gjson"
 )
-
-var s []int
-
-func init() {
-	slices.Values(s)
-}
 
 func TestFetchCompanies(t *testing.T) {
 	apiKey := "IpJoOPZUczKNxR54gCnU8sjVNGCyXj21"
@@ -69,8 +61,6 @@ func TestFetchCompanies(t *testing.T) {
 			BodyReader(strings.NewReader(payload)).
 			ToBytesBuffer(&responseBody).
 			Fetch(context.Background())
-		is := is.New(t)
-		is.NoErr(err) // failed to
 		if err != nil {
 			t.Fatal(err)
 		}
