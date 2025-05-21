@@ -1,0 +1,16 @@
+{
+  "searches": [
+    {
+      "query_by": "name,description,websiteKeywords,countries,industry,sector,hqCountry,hqProvince,hqCity,hqPostalCode,provinces,cities,size,demographicsList",
+      "exhaustive_search": true,
+      "sort_by": "initialCertificationDateTimestamp:asc",
+      "highlight_full_fields": "name,description,websiteKeywords,countries,industry,sector,hqCountry,hqProvince,hqCity,hqPostalCode,provinces,cities,size,demographicsList",
+      "collection": "companies-production-en-us",
+      "q": "*",
+      "facet_by": "hqCountry",
+      "max_facet_values": 500,
+      "per_page": 50,
+      "page": 0
+    }
+  ]
+}
