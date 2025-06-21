@@ -14,13 +14,9 @@ import (
 
 type Database struct {
 	// CORE DETAILS
-
-	// Expected format: "https://db-engines.com/$LANG/system/$DBNAME"
-	DetailsPage url.URL `json:"-"`
+	DetailsPage url.URL `json:"-"` // format: "https://db-engines.com/$LANG/system/$DBNAME"
 	Name        string
-
 	// ADDITIONAL DETAILS
-
 	CloudOnly     string
 	ImplementedIn string
 	License       string
@@ -40,18 +36,9 @@ const (
 )
 
 func DatabaseDetail() {
-	systemsDocument := getSystemsDocument()
-
-	linksSelection := systemsDocument.Find("table.list a")
-	databases := make([]Database, 0, linksSelection.Length())
-	linksSelection.Each(func(_ int, dbAnchor *goquery.Selection) {
-		db, err := dbLink(dbAnchor)
-		if err != nil {
-			log.Println("invalid item:", err)
-			return
-		}
-		databases = append(databases, db)
-	})
+	knownDBPage := fetchKnownDBPage()
+	dbList := knownDBPage.Find("table.list a")
+	databases := listedDatabaseWithDetailsURL(dbList)
 	for _, db := range databases {
 		addDetails(&db)
 		dbJSON, _ := json.Marshal(&db)
@@ -59,7 +46,21 @@ func DatabaseDetail() {
 	}
 }
 
-func getSystemsDocument() *goquery.Document {
+func listedDatabaseWithDetailsURL(linksSelection *goquery.Selection) []Database {
+	databases := make([]Database, linksSelection.Length())
+	linksSelection.Each(func(i int, dbAnchor *goquery.Selection) {
+		var db Database
+		err := setNameAndURL(&db, dbAnchor)
+		if err != nil {
+			log.Printf("invalid item %d: %v", i, err)
+			return
+		}
+		databases[i] = db
+	})
+	return databases
+}
+
+func fetchKnownDBPage() *goquery.Document {
 	resp, err := http.Get(systemsPage)
 	if err != nil {
 		log.Fatal(err)
@@ -72,27 +73,38 @@ func getSystemsDocument() *goquery.Document {
 	return systemsPage
 }
 
-func dbLink(anchor *goquery.Selection) (db Database, err error) {
+func setNameAndURL(db *Database, anchor *goquery.Selection) (err error) {
 	anchor.Find("span").Remove()
 	db.Name = strings.TrimSpace(anchor.Text())
 	if db.Name == "" {
-		return db, fmt.Errorf("missing 'name'")
+		return fmt.Errorf("missing 'name'")
 	}
-	href, _ := anchor.Attr("href")
+	href, found := anchor.Attr("href")
+	if !found {
+		return fmt.Errorf(`missing "href" attribute`)
+	}
+	aURL, err := parseURL(href)
+	if err != nil {
+		return fmt.Errorf(`failed to parse "href": %w`, err)
+	}
+	db.DetailsPage = *aURL
+	return nil
+}
+
+func parseURL(href string) (dbURL *url.URL, err error) {
 	href = strings.TrimSpace(href)
 	if href == "" {
-		return db, fmt.Errorf("missing 'href'")
+		return dbURL, fmt.Errorf("blank")
 	}
-	url, urlErr := url.Parse(href)
-	if urlErr != nil {
-		return db, fmt.Errorf("invalid 'href' for %q: %s", db.Name, urlErr)
+	dbURL, err = url.Parse(href)
+	if err != nil {
+		return dbURL, err
 	}
-	db.DetailsPage = *url
-	return db, nil
+	return dbURL, nil
 }
 
 func addDetails(db *Database) {
-	details, err := getDetailsMap(db.DetailsPage)
+	details, err := fetchDetailsMap(db.DetailsPage)
 	if err != nil {
 		log.Println("failed to get details", err)
 		return
@@ -100,29 +112,34 @@ func addDetails(db *Database) {
 	db.readDetails(details)
 }
 
-func getDetailsMap(url url.URL) (details map[string]string, err error) {
+func fetchDetailsMap(url url.URL) (details map[string]string, err error) {
 	res, err := http.Get(url.String())
 	if err != nil {
 		return nil, err
 	}
 	defer res.Body.Close()
-	detailsDocument, err := goquery.NewDocumentFromReader(res.Body)
+	doc, err := goquery.NewDocumentFromReader(res.Body)
 	if err != nil {
 		return nil, err
 	}
-	attributeCells := detailsDocument.Find("TABLE.tools TBODY").Find("TD.attribute:not(.external_att)")
-	details = make(map[string]string, attributeCells.Length())
-	attributeCells.Each(func(i int, attributeTD *goquery.Selection) {
-		attributeTD.Find("SPAN.info").Remove()
-		name := strings.ToUpper(strings.TrimSpace(attributeTD.Text()))
-		valueTD := attributeTD.Next()
-		valueTD.Find("SPAN.info").Remove()
-		value := strings.TrimSpace(valueTD.Text())
+	attributeNodes := doc.Find("TABLE.tools TBODY").Find("TD.attribute:not(.external_att)")
+	details = make(map[string]string, attributeNodes.Length())
+	attributeNodes.Each(func(i int, attributeNode *goquery.Selection) {
+		name, value := dbAttribute(attributeNode)
 		if name == "" || value == "" {
-			log.Printf("empty attribute %q or value %q\n", name, value)
+			log.Printf("[fetchDetailsMap] empty attribute %q or value %q for item %d", name, value, i)
 			return
 		}
 		details[name] = value
 	})
 	return details, nil
+}
+
+func dbAttribute(attributeNode *goquery.Selection) (name string, value string) {
+	attributeNode.Find("SPAN.info").Remove()
+	name = strings.ToUpper(strings.TrimSpace(attributeNode.Text()))
+	valueTD := attributeNode.Next()
+	valueTD.Find("SPAN.info").Remove()
+	value = strings.TrimSpace(valueTD.Text())
+	return name, value
 }
